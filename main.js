@@ -52,9 +52,21 @@ const {device} = await inquirer.prompt([{name: "device", choices: deviceNames, m
 
 console.clear()
 
-console.log(chalk.bgWhiteBright.black("ADB JAVASCRIPT MENU\n\n")+chalk.bgBlueBright.whiteBright("Device:")+ " " + device)
+console.log(chalk.bgWhiteBright.black("Tachiyomi Package Manager\n\n")+chalk.bgBlueBright.whiteBright("Device:")+ " " + device)
 
 const {menuChoice} = await inquirer.prompt([{name: "menuChoice", choices: ["View Installed Packages", "Change Device", "Exit"], message: " ", type: "list", prefix: null}])
 
-console.log(menuChoice)
+
+
+switch (menuChoice) {
+    case "View Installed Packages":
+        const pkgCommand = `adb -s ${device} shell pm list packages -u --user 0`
+        const {stdout} = await asynExec(pkgCommand)
+        let packages = stdout.split(/\r?\n/).sort()
+        packages = packages.filter(n => {
+            if (n.includes("tachiyomi")) return n;
+        })
+        console.log(packages)
+}
+
 
