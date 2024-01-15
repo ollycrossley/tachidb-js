@@ -74,7 +74,18 @@ const GetPackages = async (currentDevice) => {
     return packages
 }
 
-currentDevice = await SetDevice()
+const SaveToClipboard = async (data, message = undefined) => {
+    const {saveToClip} = await inquirer.prompt([{
+        name: "saveToClip",
+        message: `${message || "Save output to clipboard?"}`,
+        type: "confirm",
+        prefix: chalk.yellowBright("?")
+    }])
+    if (saveToClip) {
+        clipboard.writeSync(data)
+        console.log(chalk.green("Saved!\n"))
+    }
+}
 
 // Menu
 const Menu = async () => {
@@ -92,23 +103,35 @@ const Menu = async () => {
 
     console.log(chalk.bgWhiteBright.black("Tachiyomi Package Manager\n\n") +
         chalk.bgBlueBright.whiteBright("Device:") + " " + deviceNickname + ` ${chalk.grey("("+currentDevice+")")}`)
+
     const {menuChoice} = await inquirer.prompt([{
         name: "menuChoice",
-        choices: ["View Installed Packages", "Uninstall a Package", "Change Device", "Run an ADB command", "Exit"],
+        choices: [new inquirer.Separator(chalk.yellowBright("Tachiyomi")),new inquirer.Separator(),
+            "View Installed Packages", "Uninstall a Package",
+            new inquirer.Separator(" "),new inquirer.Separator(chalk.yellowBright("Utility")),new inquirer.Separator(),
+            "Change Device", "Run an ADB command", "Exit"],
         message: " ",
         type: "list",
-        prefix: null
+        prefix: null,
+        pageSize: 20
     }])
 
     try {
         if (menuChoice === "View Installed Packages") {
             const packages = await GetPackages(currentDevice);
             console.log("")
+
+            let packageStr = "";
+            packages.forEach(pack => {
+                packageStr += pack+"\n"
+            })
+
             packages.forEach(p => {
                 const pArray = p.split(".")
                 console.log(`${chalk.yellowBright(pArray[pArray.length - 1].toUpperCase())}: (${p})`)
             })
             console.log("")
+            await SaveToClipboard(packageStr, "Save package list to clipboard?")
             await pressAnyKey("Press any key to continue...")
             await Menu();
 
@@ -152,16 +175,7 @@ const Menu = async () => {
             }])
             const {stdout} = await asyncExec(command).catch(e => console.log(e))
             console.log(stdout)
-            const {saveToClip} = await inquirer.prompt([{
-                name: "saveToClip",
-                message: "Save output to clipboard?",
-                type: "confirm",
-                prefix: chalk.yellowBright("?")
-            }])
-            if (saveToClip) {
-                clipboard.writeSync(stdout)
-                console.log(chalk.green("Saved!\n"))
-            }
+            await SaveToClipboard(stdout)
             await pressAnyKey("Press any key to return...")
             await Menu()
 
@@ -177,4 +191,5 @@ const Menu = async () => {
     }
 }
 
+currentDevice = await SetDevice()
 await Menu()
