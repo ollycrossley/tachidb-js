@@ -77,8 +77,20 @@ currentDevice = await SetDevice()
 
 // Menu
 const Menu = async () => {
+
     console.clear()
-    console.log(chalk.bgWhiteBright.black("Tachiyomi Package Manager\n\n") + chalk.bgBlueBright.whiteBright("Device:") + " " + currentDevice)
+    let deviceNickname
+
+    try {
+        const {stdout} = await asyncExec(`adb -s ${currentDevice} shell getprop`)
+        let rawDeviceInfo = stdout.split(/\r?\n/)
+        deviceNickname = rawDeviceInfo.filter(n => n.includes("[ro.product.system.model]"))[0].replace("[ro.product.system.model]: ", "").replace(/[\[\]]/g, "");
+    } catch (e) {
+        deviceNickname = currentDevice
+    }
+
+    console.log(chalk.bgWhiteBright.black("Tachiyomi Package Manager\n\n") +
+        chalk.bgBlueBright.whiteBright("Device:") + " " + deviceNickname + ` ${chalk.grey("("+currentDevice+")")}`)
     const {menuChoice} = await inquirer.prompt([{
         name: "menuChoice",
         choices: ["View Installed Packages", "Uninstall a Package", "Change Device", "Exit"],
@@ -93,7 +105,7 @@ const Menu = async () => {
             console.log("")
             packages.forEach(p => {
                 const pArray = p.split(".")
-                console.log(`${chalk.blueBright(pArray[pArray.length - 1].toUpperCase())}: (${p})`)
+                console.log(`${chalk.yellowBright(pArray[pArray.length - 1].toUpperCase())}: (${p})`)
             })
             console.log("")
             await pressAnyKey("Press any key to continue...")
