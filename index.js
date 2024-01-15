@@ -147,8 +147,8 @@ const Menu = async () => {
         }
     } catch (e) {
         console.clear()
-        console.log("An fatal error has occured! Refreshing...")
-        pressAnyKey("Press any key to refresh...")
+        console.log("An fatal error has occurred! Refreshing...")
+        await pressAnyKey("Press any key to refresh...")
         await Menu()
     }
 }
