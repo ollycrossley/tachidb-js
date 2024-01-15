@@ -41,36 +41,51 @@ const SetDevice = async () => {
     return device;
 }
 
+const GetPackages = async (currentDevice) => {
+    const pkgCommand = `adb -s ${currentDevice} shell pm list packages -u --user 0`
+    const {stdout} = await asyncExec(pkgCommand).catch(async (e) => {
+        console.log(chalk.red("\nNo packages found!\n"))
+        await pressAnyKey("Press any key to continue...")
+        await Menu()
+    })
+    let rawPackages = stdout.split(/\r?\n/).sort()
+    let packages = rawPackages.filter(n => n.includes("tachiyomi"))
+    packages = packages.map(n => {
+        if (n.includes("tachiyomi")) {
+            const newN = n.replace("package:", "")
+            return `${newN}`;
+        }
+
+    })
+    packages = packages.filter(p => {
+        let pArr = p.split(".")
+        if (pArr[pArr.length - 1] !== "tachiyomi") return p;
+    })
+
+    return packages
+}
+
 currentDevice = await SetDevice()
 
 // Menu
 const Menu = async () => {
 
     console.clear()
-    console.log(chalk.bgWhiteBright.black("Tachiyomi Package Manager\n\n")+chalk.bgBlueBright.whiteBright("Device:")+ " " + currentDevice)
-    const {menuChoice} = await inquirer.prompt([{name: "menuChoice", choices: ["View Installed Packages", "Uninstall a Package", "Change Device", "Exit"], message: " ", type: "list", prefix: null}])
+    console.log(chalk.bgWhiteBright.black("Tachiyomi Package Manager\n\n") + chalk.bgBlueBright.whiteBright("Device:") + " " + currentDevice)
+    const {menuChoice} = await inquirer.prompt([{
+        name: "menuChoice",
+        choices: ["View Installed Packages", "Uninstall a Package", "Change Device", "Exit"],
+        message: " ",
+        type: "list",
+        prefix: null
+    }])
 
     if (menuChoice === "View Installed Packages") {
-        const pkgCommand = `adb -s ${currentDevice} shell pm list packages -u --user 0`
-        const {stdout} = await asyncExec(pkgCommand).catch(async (e) => {
-            console.log(chalk.red("\nNo packages found!\n"))
-            await pressAnyKey("Press any key to continue...")
-            await Menu()
-        })
-        let rawPackages = stdout.split(/\r?\n/).sort()
-        let packages = rawPackages.filter(n => n.includes("tachiyomi"))
-        packages = packages.map(n => {
-            if (n.includes("tachiyomi")) {
-                const newN = n.replace("package:", "")
-                return `${newN}`;
-            }
-        })
+        const packages = await GetPackages(currentDevice);
         console.log("")
         packages.forEach(p => {
             const pArray = p.split(".")
-            if (pArray[pArray.length - 1].toUpperCase() !== "TACHIYOMI") {
-                console.log(`${chalk.blueBright(pArray[pArray.length - 1].toUpperCase())}: (${p})`)
-            }
+            console.log(`${chalk.blueBright(pArray[pArray.length - 1].toUpperCase())}: (${p})`)
         })
         console.log("")
         await pressAnyKey("Press any key to continue...")
@@ -78,22 +93,18 @@ const Menu = async () => {
 
     } else if (menuChoice === "Uninstall a Package") {
 
-        const pkgCommand = `adb -s ${currentDevice} shell pm list packages -u --user 0`
-        const {stdout} = await asyncExec(pkgCommand).catch(async (e) => {
-            console.log(chalk.red("\nNo packages found!\n"))
-            await pressAnyKey("Press any key to continue...")
-            await Menu()
-        })
-        let rawPackages = stdout.split(/\r?\n/).sort()
-        let packages = rawPackages.filter(n => n.includes("tachiyomi"))
-        packages = packages.map(n => {
-            if (n.includes("tachiyomi")) {
-                const newN = n.replace("package:", "")
-                return `${newN}`;
-            }
-        })
+        const packages = await GetPackages(currentDevice)
 
-        const {packageChoice} = await inquirer.prompt([{name: "packageChoice", choices: packages, message: "Choose a package to clean uninstall", type: "list", prefix: null}])
+        const {packageChoice} = await inquirer.prompt([{
+            name: "packageChoice",
+            choices: [...packages, "Exit"],
+            message: "Choose a package to clean uninstall",
+            type: "list",
+            prefix: null
+        }])
+
+        packageChoice === "Exit" ? await Menu() : null
+
         const cleanInstallCmd = `adb -s ${currentDevice} shell cmd package install-existing ${packageChoice} --user 0`
         const uninstallCmd = `adb -s ${currentDevice} shell pm uninstall ${packageChoice}`
 
@@ -101,6 +112,7 @@ const Menu = async () => {
         console.log(chalk.yellowBright("Package cleaned..."))
         await asyncExec(uninstallCmd)
         console.log(chalk.greenBright("Package uninstalled!"))
+
         await pressAnyKey("Press any key to continue...")
         await Menu()
 
