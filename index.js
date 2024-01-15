@@ -14,11 +14,7 @@ let currentDevice = ""
 const SetDevice = async () => {
     console.clear()
     const deviceCmd = 'adb devices';
-    const {stdout} = await asyncExec(deviceCmd).catch(() => {
-        console.log(chalk.bgRedBright.whiteBright("No devices found"))
-        pressAnyKey("Press any key to exit..")
-        process.exit();
-    })
+    const {stdout} = await asyncExec(deviceCmd)
     let cmdOut = stdout.split(/\r?\n/)
     cmdOut = cmdOut.filter(n => n)
     cmdOut.shift()
@@ -27,6 +23,14 @@ const SetDevice = async () => {
         const deviceArr = device.split(" ")
         return {name: deviceArr[0], status: deviceArr[1]}
     })
+
+    if (cmdOut.length === 0) {
+        {
+            console.log(chalk.bgRedBright.whiteBright("No devices found"))
+            await pressAnyKey("Press any key to exit..")
+            process.exit();
+        }
+    }
 
     const deviceNames = cmdOut.map(device => device.name)
     console.log(chalk.bgWhiteBright.black('Devices:\n'));
@@ -73,7 +77,6 @@ currentDevice = await SetDevice()
 
 // Menu
 const Menu = async () => {
-
     console.clear()
     console.log(chalk.bgWhiteBright.black("Tachiyomi Package Manager\n\n") + chalk.bgBlueBright.whiteBright("Device:") + " " + currentDevice)
     const {menuChoice} = await inquirer.prompt([{
@@ -84,50 +87,57 @@ const Menu = async () => {
         prefix: null
     }])
 
-    if (menuChoice === "View Installed Packages") {
-        const packages = await GetPackages(currentDevice);
-        console.log("")
-        packages.forEach(p => {
-            const pArray = p.split(".")
-            console.log(`${chalk.blueBright(pArray[pArray.length - 1].toUpperCase())}: (${p})`)
-        })
-        console.log("")
-        await pressAnyKey("Press any key to continue...")
-        await Menu();
+    try {
+        if (menuChoice === "View Installed Packages") {
+            const packages = await GetPackages(currentDevice);
+            console.log("")
+            packages.forEach(p => {
+                const pArray = p.split(".")
+                console.log(`${chalk.blueBright(pArray[pArray.length - 1].toUpperCase())}: (${p})`)
+            })
+            console.log("")
+            await pressAnyKey("Press any key to continue...")
+            await Menu();
 
-    } else if (menuChoice === "Uninstall a Package") {
+        } else if (menuChoice === "Uninstall a Package") {
 
-        const packages = await GetPackages(currentDevice)
+            const packages = await GetPackages(currentDevice)
 
-        const {packageChoice} = await inquirer.prompt([{
-            name: "packageChoice",
-            choices: [...packages, chalk.redBright("Exit")],
-            message: "Choose a package to clean uninstall",
-            type: "list",
-            prefix: null,
-            pageSize: 20
-        }])
+            const {packageChoice} = await inquirer.prompt([{
+                name: "packageChoice",
+                choices: [...packages, chalk.redBright("Exit")],
+                message: "Choose a package to clean uninstall",
+                type: "list",
+                prefix: null,
+                pageSize: 20
+            }])
 
-        packageChoice === chalk.redBright("Exit") ? await Menu() : null
+            packageChoice === chalk.redBright("Exit") ? await Menu() : null
 
-        const cleanInstallCmd = `adb -s ${currentDevice} shell cmd package install-existing ${packageChoice} --user 0`
-        const uninstallCmd = `adb -s ${currentDevice} shell pm uninstall ${packageChoice}`
+            const cleanInstallCmd = `adb -s ${currentDevice} shell cmd package install-existing ${packageChoice} --user 0`
+            const uninstallCmd = `adb -s ${currentDevice} shell pm uninstall ${packageChoice}`
 
-        await asyncExec(cleanInstallCmd)
-        console.log(chalk.yellowBright("Package cleaned..."))
-        await asyncExec(uninstallCmd)
-        console.log(chalk.greenBright("Package uninstalled!"))
+            await asyncExec(cleanInstallCmd)
+            console.log(chalk.yellowBright("Package cleaned..."))
+            await asyncExec(uninstallCmd)
+            console.log(chalk.greenBright("Package uninstalled!"))
 
-        await pressAnyKey("Press any key to continue...")
-        await Menu()
+            await pressAnyKey("Press any key to continue...")
+            await Menu()
 
-    } else if (menuChoice === "Change Device") {
-        currentDevice = await SetDevice()
-        await Menu()
+        } else if (menuChoice === "Change Device") {
+            currentDevice = await SetDevice()
+            await Menu()
 
-    } else {
+        } else {
+            console.clear()
+            process.exit()
+        }
+    } catch (e) {
         console.clear()
-        process.exit()
+        console.log("An fatal error has occured! Refreshing...")
+        pressAnyKey("Press any key to refresh...")
+        await Menu()
     }
 }
 
