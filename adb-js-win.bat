@@ -1,2 +1,2 @@
 @ECHO OFF
-node main.js
+node index.js

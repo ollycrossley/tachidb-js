@@ -27,6 +27,6 @@ packages are installed correctly.
 
 ## Running the Software
 
-To run the software, open a command prompt from within the project folders and run `node main.js` and the software should run.
+To run the software, open a command prompt from within the project folders and run `node index.js` and the software should run.
 
 Alternatively, you may run `adb-js-win.bat` on a Windows machine if you wish to run it directly into the command prompt.

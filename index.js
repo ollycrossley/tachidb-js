@@ -41,7 +41,7 @@ const SetDevice = async () => {
     return device;
 }
 
-currentDevice = await SetDevice()
+currentDevice = SetDevice()
 
 // Menu
 const Menu = async () => {
@@ -85,7 +85,7 @@ const Menu = async () => {
                 prefix: null
             }])
             currentDevice = device*/
-            currentDevice = await SetDevice()
+            currentDevice = SetDevice()
             await Menu()
             break;
         default:
@@ -94,6 +94,6 @@ const Menu = async () => {
     }
 }
 
-await Menu()
+Menu()
 
 
