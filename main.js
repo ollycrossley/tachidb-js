@@ -39,6 +39,7 @@ cmdOut = cmdOut.map(device => {
     const deviceArr = device.split(" ")
     return {name: deviceArr[0], status: deviceArr[1]}
 })
+
 const deviceNames = cmdOut.map(device => device.name)
 
 console.log(chalk.bgWhiteBright.black('Devices:\n'));
@@ -47,7 +48,13 @@ cmdOut.forEach(device => {
 })
 console.log(chalk.bgWhiteBright.black("\n########\n"))
 
-inquirer.prompt([{name: "deviceChoice", choices: deviceNames, message: "Choose a device:", type: "list"}]).then((choice) => {
-    console.log(choice["deviceChoice"])
-})
+const {device} = await inquirer.prompt([{name: "device", choices: deviceNames, message: "Choose a device:", type: "list", prefix: null}])
+
+console.clear()
+
+console.log(chalk.bgWhiteBright.black("ADB JAVASCRIPT MENU\n\n")+chalk.bgBlueBright.whiteBright("Device:")+ " " + device)
+
+const {menuChoice} = await inquirer.prompt([{name: "menuChoice", choices: ["View Installed Packages", "Change Device", "Exit"], message: " ", type: "list", prefix: null}])
+
+console.log(menuChoice)
 
