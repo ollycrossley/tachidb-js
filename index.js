@@ -43,7 +43,7 @@ const SetDevice = async () => {
 
 const GetPackages = async (currentDevice) => {
     const pkgCommand = `adb -s ${currentDevice} shell pm list packages -u --user 0`
-    const {stdout} = await asyncExec(pkgCommand).catch(async (e) => {
+    const {stdout} = await asyncExec(pkgCommand).catch(async () => {
         console.log(chalk.red("\nNo packages found!\n"))
         await pressAnyKey("Press any key to continue...")
         await Menu()
@@ -97,13 +97,16 @@ const Menu = async () => {
 
         const {packageChoice} = await inquirer.prompt([{
             name: "packageChoice",
-            choices: [...packages, "Exit"],
+            choices: [...packages, chalk.redBright("Exit")],
             message: "Choose a package to clean uninstall",
             type: "list",
-            prefix: null
+            prefix: null,
+            pageSize: 20
         }])
 
-        packageChoice === "Exit" ? await Menu() : null
+        console.log(packageChoice)
+
+        packageChoice === chalk.redBright("Exit") ? await Menu() : null
 
         const cleanInstallCmd = `adb -s ${currentDevice} shell cmd package install-existing ${packageChoice} --user 0`
         const uninstallCmd = `adb -s ${currentDevice} shell pm uninstall ${packageChoice}`
