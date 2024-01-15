@@ -3,6 +3,7 @@ import {exec} from "child_process";
 import chalk from "chalk"
 import {promisify} from "util"
 import inquirer from "inquirer"
+// import {checkbox} from "@/inquirer/"
 import pressAnyKey from "press-any-key";
 import clipboard from "clipboardy"
 
@@ -102,14 +103,14 @@ const Menu = async () => {
     }
 
     console.log(chalk.bgWhiteBright.black("Tachiyomi Package Manager\n\n") +
-        chalk.bgBlueBright.whiteBright("Device:") + " " + deviceNickname + ` ${chalk.grey("("+currentDevice+")")}`)
+        chalk.bgBlueBright.whiteBright("Device:") + " " + deviceNickname + ` ${chalk.grey("(" + currentDevice + ")")}`)
 
     const {menuChoice} = await inquirer.prompt([{
         name: "menuChoice",
-        choices: [new inquirer.Separator(chalk.yellowBright("Tachiyomi")),new inquirer.Separator(),
-            "View Installed Packages", "Uninstall a Package",
-            new inquirer.Separator(" "),new inquirer.Separator(chalk.yellowBright("Utility")),new inquirer.Separator(),
-            "Change Device", "Run an ADB command", "Exit"],
+        choices: [new inquirer.Separator(chalk.yellowBright("Tachiyomi")), new inquirer.Separator(),
+            "View Installed Packages", "Uninstall Package(s)",
+            new inquirer.Separator(" "), new inquirer.Separator(chalk.yellowBright("Utility")), new inquirer.Separator(),
+            "Change Device", "Run a custom command", "Exit"],
         message: " ",
         type: "list",
         prefix: null,
@@ -123,7 +124,7 @@ const Menu = async () => {
 
             let packageStr = "";
             packages.forEach(pack => {
-                packageStr += pack+"\n"
+                packageStr += pack + "\n"
             })
 
             packages.forEach(p => {
@@ -135,37 +136,41 @@ const Menu = async () => {
             await pressAnyKey("Press any key to continue...")
             await Menu();
 
-        } else if (menuChoice === "Uninstall a Package") {
+        } else if (menuChoice === "Uninstall Package(s)") {
 
             const packages = await GetPackages(currentDevice)
+            let packagesFormatted = packages.map((pack) => {
+                const pArray = pack.split(".")
+                return {name: pArray[pArray.length - 1].toUpperCase(), value: pack}
+            })
 
-            const {packageChoice} = await inquirer.prompt([{
-                name: "packageChoice",
-                choices: [...packages, chalk.redBright("Exit")],
-                message: "Choose a package to clean uninstall",
-                type: "list",
-                prefix: null,
-                pageSize: 20
+            const {packagesToDelete} = await inquirer.prompt([{
+                name: "packagesToDelete",
+                choices: packagesFormatted,
+                message: "Choose package(s) to clean uninstall",
+                type: 'checkbox',
+                pageSize: 20,
             }])
 
-            packageChoice === chalk.redBright("Exit") ? await Menu() : null
+            for (const pack of packagesToDelete) {
 
-            const cleanInstallCmd = `adb -s ${currentDevice} shell cmd package install-existing ${packageChoice} --user 0`
-            const uninstallCmd = `adb -s ${currentDevice} shell pm uninstall ${packageChoice}`
+                const cleanInstallCmd = `adb -s ${currentDevice} shell cmd package install-existing ${pack} --user 0`
+                const uninstallCmd = `adb -s ${currentDevice} shell pm uninstall ${pack}`
 
-            await asyncExec(cleanInstallCmd)
-            console.log(chalk.yellowBright("Package cleaned..."))
-            await asyncExec(uninstallCmd)
-            console.log(chalk.greenBright("Package uninstalled!"))
+                await asyncExec(cleanInstallCmd)
+                console.log(chalk.yellowBright(`${pack.split(".").pop().toUpperCase()} cleaned...`))
+                await asyncExec(uninstallCmd)
+                console.log(chalk.greenBright(`${pack.split(".").pop().toUpperCase()} uninstalled!`))
+                console.log("")
+            }
 
             await pressAnyKey("Press any key to continue...")
             await Menu()
-
         } else if (menuChoice === "Change Device") {
             currentDevice = await SetDevice()
             await Menu()
 
-        } else if (menuChoice === "Run an ADB command") {
+        } else if (menuChoice === "Run a custom command") {
             console.clear()
             const {command} = await inquirer.prompt([{
                 name: "command",
@@ -174,9 +179,8 @@ const Menu = async () => {
                 prefix: chalk.cyanBright(">")
             }])
             const {stdout} = await asyncExec(command).catch(e => console.log(e))
-            console.log(stdout)
+            console.log(chalk.bgWhiteBright.black("OUTPUT:\n") + stdout)
             await SaveToClipboard(stdout)
-            await pressAnyKey("Press any key to return...")
             await Menu()
 
         } else {
@@ -185,6 +189,7 @@ const Menu = async () => {
         }
     } catch (e) {
         console.clear()
+        console.warn(e)
         console.log("An fatal error has occurred! Refreshing...")
         await pressAnyKey("Press any key to refresh...")
         await Menu()
