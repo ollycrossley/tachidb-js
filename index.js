@@ -3,7 +3,6 @@ import {exec} from "child_process";
 import chalk from "chalk"
 import {promisify} from "util"
 import inquirer from "inquirer"
-// import {checkbox} from "@/inquirer/"
 import pressAnyKey from "press-any-key";
 import clipboard from "clipboardy"
 
