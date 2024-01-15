@@ -104,8 +104,6 @@ const Menu = async () => {
             pageSize: 20
         }])
 
-        console.log(packageChoice)
-
         packageChoice === chalk.redBright("Exit") ? await Menu() : null
 
         const cleanInstallCmd = `adb -s ${currentDevice} shell cmd package install-existing ${packageChoice} --user 0`
