@@ -1,5 +1,10 @@
 # ADB-JS
 
+<h1 style="text-align: center;">
+    <img src="src/ADB-JS.png" alt="adb-js logo"/>
+</h1>
+
+
 ## Introduction
 
 ADB-JS is a small personal project to solve the issue of Tachiyomi packages breaking on specific android devices
