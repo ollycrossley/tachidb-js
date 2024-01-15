@@ -14,7 +14,11 @@ let currentDevice = ""
 const SetDevice = async () => {
     console.clear()
     const deviceCmd = 'adb devices';
-    const {stdout} = await asyncExec(deviceCmd)
+    const {stdout} = await asyncExec(deviceCmd).catch(() => {
+        console.log(chalk.bgRedBright.whiteBright("No devices found"))
+        pressAnyKey("Press any key to exit..")
+        process.exit();
+    })
     let cmdOut = stdout.split(/\r?\n/)
     cmdOut = cmdOut.filter(n => n)
     cmdOut.shift()
@@ -128,5 +132,3 @@ const Menu = async () => {
 }
 
 await Menu()
-
-
