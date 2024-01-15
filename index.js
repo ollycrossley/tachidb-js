@@ -41,7 +41,7 @@ const SetDevice = async () => {
     return device;
 }
 
-currentDevice = SetDevice()
+currentDevice = await SetDevice()
 
 // Menu
 const Menu = async () => {
@@ -77,15 +77,7 @@ const Menu = async () => {
             await Menu();
             break;
         case "Change Device":
-            /*const {device} = await inquirer.prompt([{
-                name: "device",
-                choices: deviceNames,
-                message: "Choose a device:",
-                type: "list",
-                prefix: null
-            }])
-            currentDevice = device*/
-            currentDevice = SetDevice()
+            currentDevice = await SetDevice()
             await Menu()
             break;
         default:
@@ -94,6 +86,6 @@ const Menu = async () => {
     }
 }
 
-Menu()
+await Menu()
 
 
