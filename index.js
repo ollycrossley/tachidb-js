@@ -122,6 +122,7 @@ const Menu = async () => {
         await Menu()
 
     } else {
+        console.clear()
         process.exit()
     }
 }
