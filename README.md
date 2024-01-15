@@ -7,7 +7,7 @@
 
 ## Introduction
 
-ADB-JS is a small personal project to solve the issue of Tachiyomi packages breaking on specific android devices
+ADB-JS is a small personal project to solve the issue of [Tachiyomi](https://github.com/tachiyomiorg/tachiyomi) packages breaking on specific android devices
 when trying to upgrade to `0.15.0` or above. Due to the changes in package management within the app, devices like 
 Samsung devices place heavy locks over package management from unauthorized apps. 
 
