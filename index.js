@@ -4,6 +4,7 @@ import chalk from "chalk"
 import {promisify} from "util"
 import inquirer from "inquirer"
 import pressAnyKey from "press-any-key";
+import clipboard from "clipboardy"
 
 // Global Variables
 const asyncExec = promisify(exec)
@@ -93,7 +94,7 @@ const Menu = async () => {
         chalk.bgBlueBright.whiteBright("Device:") + " " + deviceNickname + ` ${chalk.grey("("+currentDevice+")")}`)
     const {menuChoice} = await inquirer.prompt([{
         name: "menuChoice",
-        choices: ["View Installed Packages", "Uninstall a Package", "Change Device", "Exit"],
+        choices: ["View Installed Packages", "Uninstall a Package", "Change Device", "Run an ADB command", "Exit"],
         message: " ",
         type: "list",
         prefix: null
@@ -139,6 +140,29 @@ const Menu = async () => {
 
         } else if (menuChoice === "Change Device") {
             currentDevice = await SetDevice()
+            await Menu()
+
+        } else if (menuChoice === "Run an ADB command") {
+            console.clear()
+            const {command} = await inquirer.prompt([{
+                name: "command",
+                message: " ",
+                type: "input",
+                prefix: chalk.cyanBright(">")
+            }])
+            const {stdout} = await asyncExec(command).catch(e => console.log(e))
+            console.log(stdout)
+            const {saveToClip} = await inquirer.prompt([{
+                name: "saveToClip",
+                message: "Save output to clipboard?",
+                type: "confirm",
+                prefix: chalk.yellowBright("?")
+            }])
+            if (saveToClip) {
+                clipboard.writeSync(stdout)
+                console.log(chalk.green("Saved!\n"))
+            }
+            await pressAnyKey("Press any key to return...")
             await Menu()
 
         } else {
