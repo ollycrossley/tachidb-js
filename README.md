@@ -18,7 +18,11 @@ Samsung devices place heavy locks over package management from unauthorized apps
 This project requires a local installation of `adb` functionality. 
 
 Please follow the instructions [here](https://www.xda-developers.com/install-adb-windows-macos-linux/#how-to-set-up-adb-on-your-computer)
-for further instructions on how to set up ADB 
+for further instructions on how to set up ADB.
+
+For this project to work, you should also make sure ADB works globally across all command lines.
+
+Please ensure you read the article down to and including the **How to use ADB from any directory on your PC or Mac** section.
 
 ### NPM & Node
 
