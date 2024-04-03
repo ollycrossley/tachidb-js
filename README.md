@@ -1,13 +1,13 @@
-# ADB-JS
+# TACHIDB-JS
 
 <h1 style="text-align: center;">
-    <img src="src/ADB-JS.png" alt="adb-js logo"/>
+    <img src="src/TACHIDB-JS.png" alt="TACHIDB-JS logo"/>
 </h1>
 
 
 ## Introduction
 
-ADB-JS is a small personal project to solve the issue of [Tachiyomi](https://github.com/tachiyomiorg/tachiyomi) packages breaking on specific android devices
+TACHIDB-JS is a small personal project to solve the issue of [Tachiyomi](https://github.com/tachiyomiorg/tachiyomi) packages breaking on specific android devices
 when trying to upgrade to `0.15.0` or above. Due to the changes in package management within the app, devices like 
 Samsung devices place heavy locks over package management from unauthorized apps. 
 
@@ -38,4 +38,4 @@ packages are installed correctly.
 
 To run the software, open a command prompt from within the project folders and run `node index.js` and the software should run.
 
-Alternatively, you may run `adb-js-win.bat` on a Windows machine if you wish to run it directly into the command prompt.
+Alternatively, you may run `TACHIDB-JS-win.bat` on a Windows machine if you wish to run it directly into the command prompt.
